@@ -1,0 +1,43 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px;
+  }
+  .qty-field {
+    max-width: 120px;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.status-open {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.status-closed {
+  color: #757575;
+}

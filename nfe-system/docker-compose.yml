@@ -1,0 +1,57 @@
+services:
+  postgres-inventory:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-billing:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: billing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  inventory-service:
+    build:
+      context: ./inventory-service/InventoryService
+      dockerfile: Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres-inventory;Port=5432;Database=inventory_db;Username=postgres;Password=postgres
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      postgres-inventory:
+        condition: service_healthy
+
+  billing-service:
+    build:
+      context: ./billing-service/BillingService
+      dockerfile: Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres-billing;Port=5432;Database=billing_db;Username=postgres;Password=postgres
+      - InventoryService__BaseUrl=http://inventory-service:8080/
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      postgres-billing:
+        condition: service_healthy
+      inventory-service:
+        condition: service_started
