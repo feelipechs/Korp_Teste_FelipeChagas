@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/backend/" />
+  <Folder Name="/backend/billing-service/">
+    <Project Path="backend/billing-service/BillingService/BillingService.csproj" />
+  </Folder>
+  <Folder Name="/backend/inventory-service/">
+    <Project Path="backend/inventory-service/InventoryService/InventoryService.csproj" />
+  </Folder>
+</Solution>

@@ -29,7 +29,7 @@ services:
 
   inventory-service:
     build:
-      context: ./inventory-service/InventoryService
+      context: ./backend/inventory-service/InventoryService
       dockerfile: Dockerfile
     ports:
       - "5001:8080"
@@ -42,7 +42,7 @@ services:
 
   billing-service:
     build:
-      context: ./billing-service/BillingService
+      context: ./backend/billing-service/BillingService
       dockerfile: Dockerfile
     ports:
       - "5002:8080"
