@@ -20,9 +20,11 @@ public class InvoicesController(InvoiceService service) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateInvoiceDto dto)
+    public async Task<IActionResult> Create(
+        CreateInvoiceDto dto,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey)
     {
-        var invoice = await service.CreateAsync(dto);
+        var invoice = await service.CreateAsync(dto, idempotencyKey);
         return CreatedAtAction(nameof(GetById), new { id = invoice.Id }, invoice);
     }
 

@@ -14,11 +14,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.HasKey(i => i.Id);
             entity.HasIndex(i => i.Number).IsUnique();
+            entity.HasIndex(i => i.IdempotencyKey).IsUnique();
             entity.Property(i => i.Status).HasConversion<string>();
             entity.HasMany(i => i.Items)
-                  .WithOne(ii => ii.Invoice)
-                  .HasForeignKey(ii => ii.InvoiceId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(ii => ii.Invoice)
+                .HasForeignKey(ii => ii.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<InvoiceItem>(entity =>

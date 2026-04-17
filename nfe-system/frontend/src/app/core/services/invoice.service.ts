@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Invoice, CreateInvoiceDto } from '../models/invoice.model';
 
@@ -14,7 +14,10 @@ export class InvoiceService {
   }
 
   create(dto: CreateInvoiceDto): Observable<Invoice> {
-    return this.http.post<Invoice>(this.apiUrl, dto);
+    const headers = new HttpHeaders({
+      'Idempotency-Key': crypto.randomUUID(),
+    });
+    return this.http.post<Invoice>(this.apiUrl, dto, { headers });
   }
 
   print(id: number): Observable<Invoice> {

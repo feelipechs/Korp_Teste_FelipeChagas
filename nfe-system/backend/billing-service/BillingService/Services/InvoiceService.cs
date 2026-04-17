@@ -23,8 +23,18 @@ public class InvoiceService(AppDbContext db, InventoryClient inventoryClient)
         return invoice is null ? null : ToResponse(invoice);
     }
 
-    public async Task<InvoiceResponseDto> CreateAsync(CreateInvoiceDto dto)
+    public async Task<InvoiceResponseDto> CreateAsync(CreateInvoiceDto dto, string? idempotencyKey)
     {
+        if (!string.IsNullOrEmpty(idempotencyKey))
+        {
+            var existing = await db.Invoices
+                .Include(i => i.Items)
+                .FirstOrDefaultAsync(i => i.IdempotencyKey == idempotencyKey);
+
+            if (existing is not null)
+                return ToResponse(existing);
+        }
+
         var nextNumber = await db.Invoices.AnyAsync()
             ? await db.Invoices.MaxAsync(i => i.Number) + 1
             : 1;
@@ -32,6 +42,7 @@ public class InvoiceService(AppDbContext db, InventoryClient inventoryClient)
         var invoice = new Invoice
         {
             Number = nextNumber,
+            IdempotencyKey = idempotencyKey,
             Items = dto.Items.Select(i => new InvoiceItem
             {
                 ProductId = i.ProductId,
@@ -42,7 +53,33 @@ public class InvoiceService(AppDbContext db, InventoryClient inventoryClient)
         };
 
         db.Invoices.Add(invoice);
-        await db.SaveChangesAsync();
+
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            if (!string.IsNullOrEmpty(idempotencyKey))
+            {
+                var existing = await db.Invoices
+                    .Include(i => i.Items)
+                    .FirstOrDefaultAsync(i => i.IdempotencyKey == idempotencyKey);
+
+                if (existing is not null)
+                    return ToResponse(existing);
+            }
+
+            var existingByNumber = await db.Invoices
+                .Include(i => i.Items)
+                .FirstOrDefaultAsync(i => i.Number == invoice.Number);
+
+            if (existingByNumber is not null)
+                return ToResponse(existingByNumber);
+
+            throw;
+        }
+
         return ToResponse(invoice);
     }
 
